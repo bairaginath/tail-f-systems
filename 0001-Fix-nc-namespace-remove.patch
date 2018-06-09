@@ -1,0 +1,100 @@
+From 6493aede890ebc1142e539e393d43206ab2a48fe Mon Sep 17 00:00:00 2001
+From: zhuhq <HongquanZhu@HongquanZhuMac.local>
+Date: Sat, 9 Jun 2018 15:47:20 +0800
+Subject: [PATCH] Fix nc namespace remove.
+
+---
+ jnc/src/com/tailf/jnc/NetconfSession.java | 49 +++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 16 deletions(-)
+
+diff --git a/jnc/src/com/tailf/jnc/NetconfSession.java b/jnc/src/com/tailf/jnc/NetconfSession.java
+index faa3c80..726627f 100644
+--- a/jnc/src/com/tailf/jnc/NetconfSession.java
++++ b/jnc/src/com/tailf/jnc/NetconfSession.java
+@@ -1611,11 +1611,15 @@ public class NetconfSession {
+     protected int encode_rpc_begin(Transport out, Attribute attr) {
+         final String prefix = Element.defaultPrefixes
+                 .nsToPrefix(Element.NETCONF_NAMESPACE);
+-        nc = mk_prefix_colon(prefix);
+-        final String xmlnsAttr = mk_xmlns_attr(prefix,
+-                Element.NETCONF_NAMESPACE);
+-
+-        out.print("<" + nc + "rpc " + xmlnsAttr + " " + nc + "message-id=\"");
++//        nc = mk_prefix_colon(prefix);
++        nc = "";
++//        final String xmlnsAttr = mk_xmlns_attr(prefix,
++//                Element.NETCONF_NAMESPACE);
++      final String xmlnsAttr = mk_xmlns_attr("",
++      Element.NETCONF_NAMESPACE);          
++
++//        out.print("<" + nc + "rpc " + xmlnsAttr + " " + nc + "message-id=\"");
++        out.print("<" + "rpc " + xmlnsAttr + " " + nc + "message-id=\"");
+         final int mid = message_id++;
+         out.print(mid);
+         out.print("\"");
+@@ -1641,7 +1645,8 @@ public class NetconfSession {
+      * @param out Transport output stream
+      */
+     protected void encode_rpc_end(Transport out) {
+-        out.print("</" + nc + "rpc>");
++//        out.print("</" + nc + "rpc>");
++    		out.print("</" + "rpc>");
+         // do not end with newline
+     }
+ 
+@@ -1665,14 +1670,23 @@ public class NetconfSession {
+     int encode_getConfig(Transport out, String source, Element subtreeFilter)
+             throws JNCException {
+         final int mid = encode_rpc_begin(out, withDefaultsAttr);
+-        out.println("<" + nc + GET_CONFIG_GT);
+-        out.print("<" + nc + SOURCE_GT);
++//        out.println("<" + nc + GET_CONFIG_GT);
++//        out.print("<" + nc + SOURCE_GT);
++//        out.print(source);
++//        out.println("</" + nc + SOURCE_GT);
++//        out.println("<" + nc + FILTER + nc + "type=\"subtree\">");
++//        subtreeFilter.encode(out, true, capabilities);
++//        out.println("</" + nc + FILTER_GT);
++//        out.println("</" + nc + GET_CONFIG_GT);
++//        encode_rpc_end(out);
++        out.println("<" + GET_CONFIG_GT);
++        out.print("<" + SOURCE_GT);
+         out.print(source);
+-        out.println("</" + nc + SOURCE_GT);
+-        out.println("<" + nc + FILTER + nc + "type=\"subtree\">");
++        out.println("</" + SOURCE_GT);
++        out.println("<" + FILTER + "type=\"subtree\">");
+         subtreeFilter.encode(out, true, capabilities);
+-        out.println("</" + nc + FILTER_GT);
+-        out.println("</" + nc + GET_CONFIG_GT);
++        out.println("</" + FILTER_GT);
++        out.println("</" + GET_CONFIG_GT);
+         encode_rpc_end(out);
+         return mid;
+     }
+@@ -1772,15 +1786,18 @@ public class NetconfSession {
+     String encode_datastore(int datastore) throws JNCException {
+         final String prefix = Element.defaultPrefixes
+                 .nsToPrefix(Element.NETCONF_NAMESPACE);
+-        nc = mk_prefix_colon(prefix);
++//        nc = mk_prefix_colon(prefix);
+ 
+         switch (datastore) {
+         case RUNNING:
+-            return "<" + nc + "running/>";
++//            return "<" + nc + "running/>";
++        		 	return "<" + "running/>"; 
+         case CANDIDATE:
+-            return "<" + nc + "candidate/>";
++//            return "<" + nc + "candidate/>";
++        			return "<" + "candidate/>";
+         case STARTUP:
+-            return "<" + nc + "startup/>";
++//            return "<" + nc + "startup/>";
++        			return "<" + "startup/>";	
+         }
+         throw new JNCException(JNCException.SESSION_ERROR,
+                 "unknown datastore: " + datastore);
+-- 
+2.6.2
+
